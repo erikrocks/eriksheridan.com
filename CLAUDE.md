@@ -2,14 +2,14 @@
 
 ## What this is
 
-The **apex domain**, which serves a one-page *menu* pointing at three other addresses.
+The **apex domain**, which serves a one-page *menu* pointing at four other addresses.
 It is not the resume any more — the resume moved to its own subdomain in September 2026.
 
 Erik is not an engineer. Handle tooling, DNS and setup for him rather than handing over
 commands, and explain changes by their consequence ("visitors will see X") rather than by
 mechanism.
 
-## The four addresses
+## The five addresses
 
 | Address | Repo | Host | What it is |
 |---|---|---|---|
@@ -17,8 +17,9 @@ mechanism.
 | `resume.eriksheridan.com` | `erikrocks/resume.eriksheridan.com` | GitHub Pages | The resume |
 | `kudr.eriksheridan.com` | `erikrocks/kitty-unicorn-game` | GitHub Pages | Vivian's browser game |
 | `ebaapl.eriksheridan.com` | `erikrocks/ebaapl` (private) | **Vercel** | NCAA pick'em app |
+| `bubble.eriksheridan.com` | `erikrocks/bubble` | GitHub Pages | Pixel-art bubble game |
 
-All three GitHub Pages sites: branch `main`, path `/`, custom domain set via a `CNAME`
+All four GitHub Pages sites: branch `main`, path `/`, custom domain set via a `CNAME`
 file in the repo root, certificate approved, **Enforce HTTPS on**. Push to `main` and it
 redeploys; nothing else to configure.
 
@@ -142,3 +143,6 @@ until curl -s "https://eriksheridan.com/?cb=$RANDOM" | grep -q "What I'm buildin
 
 - **Sep 2026** — Apex converted from resume to hub. Resume moved to its own repo and
   subdomain. HTTPS enforcement turned on for the apex (it had been off since launch).
+- **15 Sep 2026** — `bubble.eriksheridan.com` added as a fourth entry, sitting between KUDR
+  and the resume so the two games read together. Adding it DNS-record-first took the
+  certificate from request to approved in 30 seconds, confirming the ordering rule above.
