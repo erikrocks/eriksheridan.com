@@ -2,14 +2,14 @@
 
 ## What this is
 
-The **apex domain**, which serves a one-page *menu* pointing at four other addresses.
+The **apex domain**, which serves a one-page *menu* pointing at five other addresses.
 It is not the resume any more — the resume moved to its own subdomain in September 2026.
 
 Erik is not an engineer. Handle tooling, DNS and setup for him rather than handing over
 commands, and explain changes by their consequence ("visitors will see X") rather than by
 mechanism.
 
-## The five addresses
+## The six addresses
 
 | Address | Repo | Host | What it is |
 |---|---|---|---|
@@ -18,13 +18,24 @@ mechanism.
 | `kudr.eriksheridan.com` | `erikrocks/kitty-unicorn-game` | GitHub Pages | Vivian's browser game |
 | `ebaapl.eriksheridan.com` | `erikrocks/ebaapl` (private) | **Vercel** | NCAA pick'em app |
 | `bubble.eriksheridan.com` | `erikrocks/bubble` | GitHub Pages | Pixel-art bubble game |
+| `gametimetalk.com` | `erikrocks/ebaapl` (private) | **Vercel** | Spoiler-free football chat (beta) |
 
 All four GitHub Pages sites: branch `main`, path `/`, custom domain set via a `CNAME`
 file in the repo root, certificate approved, **Enforce HTTPS on**. Push to `main` and it
 redeploys; nothing else to configure.
 
-EBAAPL is the odd one out — Next.js on Vercel, private repo, auto-deploys on push. Its DNS
-points at Vercel, not GitHub. Don't try to manage it through the Pages API.
+EBAAPL and GameTimeTalk are the odd ones out — Next.js on Vercel, auto-deploy on push,
+DNS pointing at Vercel rather than GitHub. Don't try to manage either through the Pages API.
+
+**GameTimeTalk shares EBAAPL's repo and Vercel project.** One deployment serves both sites
+and the *hostname* decides which one you get; there is no `gametimetalk` repo (splitting it
+out is on the backlog). It is also the only entry on the hub that is not an
+`eriksheridan.com` subdomain — it has its own domain, registered at Squarespace like the
+others. Link the site, never a repo.
+
+Describe GameTimeTalk as a **beta**, not as finished. Two things are deliberately not said
+in public: which sports-data feed it uses, and any detail of its internals or known gaps.
+Fine to say: free, no accounts, works on phones.
 
 ## Why subdomains and not `eriksheridan.com/kudr`
 
@@ -146,3 +157,9 @@ until curl -s "https://eriksheridan.com/?cb=$RANDOM" | grep -q "What I'm buildin
 - **15 Sep 2026** — `bubble.eriksheridan.com` added as a fourth entry, sitting between KUDR
   and the resume so the two games read together. Adding it DNS-record-first took the
   certificate from request to approved in 30 seconds, confirming the ordering rule above.
+- **4 Nov 2026** — GameTimeTalk added, placed directly after EBAAPL so the two football apps
+  read together and the two games stay adjacent. Context came from the separate
+  "GameTimeTalk (Local)" session, which owns that project.
+- Entry descriptions are **Erik's own voice** — first person, short, usually with the reason
+  he built the thing ("I got annoyed with our pick site so I made my own"). Match that
+  register when adding one, and don't invent a personal origin story he hasn't told you.
