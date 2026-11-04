@@ -110,9 +110,10 @@ rule as KUDR. ~100KB, almost all of it the embedded headshot.
 `DM Serif Display` for names, `DM Sans` for everything else, green `#3B6D11`, ground
 `#fafaf8`, borders `#e4e4de`. Light theme only, deliberately — matches the resume.
 
-**Resume is currently a peer entry**, same visual weight as the projects. Erik's plan is to
-demote it to a small corner link once there are more projects. That's a small edit: pull the
-third `.entry` out and add a link in a header.
+**The resume is NOT a project entry** — it was demoted on 4 Nov 2026 once there were four
+real projects. It now sits in the left rail as a `.rail-link`, **between the email address
+and LinkedIn**, with a document icon matching the other two. The `What I'm building` list
+holds only things Erik built. Don't put the resume back in that list.
 
 ## The headshot
 
@@ -160,6 +161,11 @@ until curl -s "https://eriksheridan.com/?cb=$RANDOM" | grep -q "What I'm buildin
 - **4 Nov 2026** — GameTimeTalk added and, on Erik's instruction, moved to the **top** of
   the list — it leads the page. Order is now GameTimeTalk, EBAAPL, KUDR, Bubble, Resume.
   Context came from the separate "GameTimeTalk (Local)" session, which owns that project.
+- **4 Nov 2026** — Resume demoted out of the project list into the rail (see above), and the
+  tagline replaced with "Let's make something together." on both the hub and the resume.
+  The old tagline's "Product leader. Team builder." was cut because the title line directly
+  above it already reads "VP of Product" — watch for that kind of stacking when editing the
+  rail copy.
 - **4 Nov 2026** — all entry descriptions rewritten to a **neutral register** at Erik's
   request. No first person, no origin stories ("I got annoyed with our pick site", "I had
   the idea in a dream" — both removed), no family names. Each entry now says what the thing
