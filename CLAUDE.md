@@ -157,9 +157,9 @@ until curl -s "https://eriksheridan.com/?cb=$RANDOM" | grep -q "What I'm buildin
 - **15 Sep 2026** — `bubble.eriksheridan.com` added as a fourth entry, sitting between KUDR
   and the resume so the two games read together. Adding it DNS-record-first took the
   certificate from request to approved in 30 seconds, confirming the ordering rule above.
-- **4 Nov 2026** — GameTimeTalk added, placed directly after EBAAPL so the two football apps
-  read together and the two games stay adjacent. Context came from the separate
-  "GameTimeTalk (Local)" session, which owns that project.
+- **4 Nov 2026** — GameTimeTalk added and, on Erik's instruction, moved to the **top** of
+  the list — it leads the page. Order is now GameTimeTalk, EBAAPL, KUDR, Bubble, Resume.
+  Context came from the separate "GameTimeTalk (Local)" session, which owns that project.
 - **4 Nov 2026** — all entry descriptions rewritten to a **neutral register** at Erik's
   request. No first person, no origin stories ("I got annoyed with our pick site", "I had
   the idea in a dream" — both removed), no family names. Each entry now says what the thing
