@@ -160,6 +160,11 @@ until curl -s "https://eriksheridan.com/?cb=$RANDOM" | grep -q "What I'm buildin
 - **4 Nov 2026** — GameTimeTalk added, placed directly after EBAAPL so the two football apps
   read together and the two games stay adjacent. Context came from the separate
   "GameTimeTalk (Local)" session, which owns that project.
-- Entry descriptions are **Erik's own voice** — first person, short, usually with the reason
-  he built the thing ("I got annoyed with our pick site so I made my own"). Match that
-  register when adding one, and don't invent a personal origin story he hasn't told you.
+- **4 Nov 2026** — all entry descriptions rewritten to a **neutral register** at Erik's
+  request. No first person, no origin stories ("I got annoyed with our pick site", "I had
+  the idea in a dream" — both removed), no family names. Each entry now says what the thing
+  is and what is interesting about it, nothing more. **Match that register when adding one.**
+- **Vivian's name was removed** from the KUDR entry at the same time; it now reads "designed
+  by a seven-year-old". Keep real children's names off the public site — see the standing
+  rule about never putting a real child's name in code, docs, or anything published.
+  The KUDR kicker still reads "Kid designed, dad approved." — Erik kept that deliberately.
