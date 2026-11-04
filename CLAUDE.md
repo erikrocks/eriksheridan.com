@@ -117,9 +117,22 @@ holds only things Erik built. Don't put the resume back in that list.
 
 ## The headshot
 
-A base64 `data:` URI embedded directly in the HTML, ~92KB, and **duplicated byte-for-byte in
-both `eriksheridan.com/index.html` and `resume.eriksheridan.com/index.html`**. Changing the
-photo means changing both files. There is no image file anywhere.
+`headshot.jpg` — a real 400x400 file in the repo root, served alongside the page. It was a
+base64 `data:` URI inlined in the HTML until 4 Nov 2026; extracting it took the page from
+101KB to **9KB** and made the file editable by hand. **Don't inline it again.**
+
+The same file exists in `resume.eriksheridan.com`. Changing the photo still means replacing
+it in both repos. It also serves as the Open Graph preview image and the apple-touch-icon.
+
+## Favicon and link previews
+
+`favicon.svg` — a 352-byte SVG, green `#3B6D11` with cream "ES" in a serif. Same file in
+both repos. Linked as `<link rel="icon" href="favicon.svg" type="image/svg+xml">`.
+
+Open Graph and Twitter card tags live in the `<head>` of both pages, pointing `og:image` at
+`headshot.jpg`. Added 4 Nov 2026 — before that, texting someone the link produced a bare
+blue link with no card. **Keep `og:url` and `og:image` absolute**; relative URLs do not work
+for previews.
 
 ## Deploying and verifying
 
