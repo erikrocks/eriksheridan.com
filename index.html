@@ -123,13 +123,35 @@
     }
 
     .entry {
-      display: block;
+      display: grid;
+      grid-template-columns: 30px 1fr;
+      column-gap: 16px;
       text-decoration: none;
       color: inherit;
       padding: 30px 0;
       border-bottom: 1px solid var(--border);
     }
     .entry:last-of-type { border-bottom: none; }
+
+    /* The icon hangs in a left gutter, pinned to the FIRST line of the name
+       (align-self: start, not center — the name wraps to two or three lines on
+       a phone and a centred icon would float down to the middle of it).
+       Every text row is placed in column 2 so kicker, name, description and
+       address all stay flush with each other. */
+    .entry-icon {
+      grid-column: 1;
+      grid-row: 2;
+      align-self: start;
+      margin-top: 3px;
+      width: 26px;
+      height: 26px;
+      color: var(--text-faint);
+      transition: color 0.15s;
+    }
+    .entry-kicker { grid-column: 2; grid-row: 1; }
+    .entry-name   { grid-column: 2; grid-row: 2; }
+    .entry-desc   { grid-column: 2; grid-row: 3; }
+    .entry-url    { grid-column: 2; grid-row: 4; }
 
     .entry-kicker {
       font-size: 11px;
@@ -175,6 +197,7 @@
     .entry:hover .entry-kicker { color: var(--green); }
     .entry:hover .arrow { transform: translateX(4px); color: var(--green); }
     .entry:hover .entry-url { color: var(--green); }
+    .entry:hover .entry-icon { color: var(--green); }
     .entry:focus-visible { outline: 2px solid var(--green); outline-offset: 6px; border-radius: 4px; }
 
     /* ── Footer ── */
@@ -206,6 +229,8 @@
       }
       .rail { position: static; }
       .rail-name { font-size: 34px; }
+      .entry { grid-template-columns: 24px 1fr; column-gap: 12px; }
+      .entry-icon { width: 22px; height: 22px; margin-top: 2px; }
       .entry-name { font-size: 24px; }
       footer { padding: 24px; }
     }
@@ -244,6 +269,9 @@
       <p class="projects-label">What I'm building</p>
 
       <a class="entry" href="https://gametimetalk.com">
+        <svg class="entry-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
         <p class="entry-kicker">Spoiler-free chat</p>
         <h2 class="entry-name">GameTimeTalk<span class="arrow">&rarr;</span></h2>
         <p class="entry-desc">
@@ -256,6 +284,9 @@
       </a>
 
       <a class="entry" href="https://ebaapl.eriksheridan.com">
+        <svg class="entry-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true"><ellipse cx="12" cy="12" rx="9" ry="6.2" transform="rotate(-45 12 12)"/><path d="M8.8 15.2 15.2 8.8"/></svg>
         <p class="entry-kicker">Fantasy football</p>
         <h2 class="entry-name">EBAAPL<span class="arrow">→</span></h2>
         <p class="entry-desc">
@@ -267,6 +298,9 @@
       </a>
 
       <a class="entry" href="https://kudr.eriksheridan.com">
+        <svg class="entry-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true"><path d="M2.5 17.5a9.5 9.5 0 0 1 19 0"/><path d="M5.7 17.5a6.3 6.3 0 0 1 12.6 0"/><path d="M8.9 17.5a3.1 3.1 0 0 1 6.2 0"/></svg>
         <p class="entry-kicker">Kid designed, dad approved.</p>
         <h2 class="entry-name">Kitty Unicorn Dolphin Rider<span class="arrow">→</span></h2>
         <p class="entry-desc">
@@ -279,6 +313,9 @@
       </a>
 
       <a class="entry" href="https://bubble.eriksheridan.com">
+        <svg class="entry-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"
+             aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M7.6 9a6 6 0 0 0 3.4-2.6"/></svg>
         <p class="entry-kicker">Pixel game</p>
         <h2 class="entry-name">Bubble<span class="arrow">&rarr;</span></h2>
         <p class="entry-desc">

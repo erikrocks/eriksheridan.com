@@ -115,6 +115,29 @@ real projects. It now sits in the left rail as a `.rail-link`, **between the ema
 and LinkedIn**, with a document icon matching the other two. The `What I'm building` list
 holds only things Erik built. Don't put the resume back in that list.
 
+## Entry icons
+
+Each project entry has a line icon hanging in a **left gutter** (`.entry-icon`, inline SVG,
+`stroke-width: 1.7`, matching the rail icons). The gutter is a grid column, and every text
+row — kicker, name, description, address — is placed in column 2, so they all stay flush
+and only the icon hangs out.
+
+- The icon is pinned with `align-self: start` to the **first line of the name**, not
+  centred. "Kitty Unicorn Dolphin Rider" wraps to two lines on a phone and a centred icon
+  would float down to the middle of it.
+- `aria-hidden="true"` on all four: each icon only restates the name next to it. (This is
+  the opposite call from the headshot, which carries real alt text.)
+- Icons are 26px desktop, 22px mobile, and go green on hover with the rest of the entry.
+
+**They must survive at 26px.** The football originally had a seam and three laces; the
+laces sat ~2.5 units apart against a 1.7 stroke and merged into a smudge, so it is now the
+oval and the seam only. The rainbow originally had a tiny innermost arc, which made it read
+as a wifi symbol; it is three evenly spaced bands now. Render any new icon at 26px and look
+at it before committing — at 120px everything looks fine.
+
+Current set: speech bubble (GameTimeTalk), football (EBAAPL), rainbow (KUDR), soap bubble
+with a highlight (Bubble).
+
 ## The headshot
 
 `headshot.jpg` — a real 400x400 file in the repo root, served alongside the page. It was a
@@ -187,3 +210,4 @@ until curl -s "https://eriksheridan.com/?cb=$RANDOM" | grep -q "What I'm buildin
   by a seven-year-old". Keep real children's names off the public site — see the standing
   rule about never putting a real child's name in code, docs, or anything published.
   The KUDR kicker still reads "Kid designed, dad approved." — Erik kept that deliberately.
+- **4 Nov 2026** — a line icon added to the left of each project entry (see "Entry icons").
