@@ -117,26 +117,37 @@ holds only things Erik built. Don't put the resume back in that list.
 
 ## Entry icons
 
-Each project entry has a line icon hanging in a **left gutter** (`.entry-icon`, inline SVG,
-`stroke-width: 1.7`, matching the rail icons). The gutter is a grid column, and every text
-row — kicker, name, description, address — is placed in column 2, so they all stay flush
-and only the icon hangs out.
+Each project entry shows **that project's own app icon**, as a phone-home-screen tile in a
+left gutter. They are not drawn by hand -- they are copies of the real icons, pulled from
+the live sites (`icon-192.png` from each manifest; EBAAPL serves `/icon.svg`). If a project
+changes its icon, re-pull it here; nothing syncs automatically.
 
-- The icon is pinned with `align-self: start` to the **first line of the name**, not
-  centred. "Kitty Unicorn Dolphin Rider" wraps to two lines on a phone and a centred icon
-  would float down to the middle of it.
-- `aria-hidden="true"` on all four: each icon only restates the name next to it. (This is
-  the opposite call from the headshot, which carries real alt text.)
-- Icons are 26px desktop, 22px mobile, and go green on hover with the rest of the entry.
+| Entry | File | Source |
+|---|---|---|
+| GameTimeTalk | `icons/gametimetalk.png` | `gametimetalk.com/gametimetalk/icon-192.png` |
+| EBAAPL | `icons/ebaapl.svg` | `ebaapl.eriksheridan.com/icon.svg` |
+| KUDR | `icons/kudr.png` | `kudr.eriksheridan.com/icon-192.png` |
+| Bubble | `icons/bubble.png` | `bubble.eriksheridan.com/icon-192.png` |
 
-**They must survive at 26px.** The football originally had a seam and three laces; the
-laces sat ~2.5 units apart against a 1.7 stroke and merged into a smudge, so it is now the
-oval and the seam only. The rainbow originally had a tiny innermost arc, which made it read
-as a wifi symbol; it is three evenly spaced bands now. Render any new icon at 26px and look
-at it before committing — at 120px everything looks fine.
+- 48px desktop, 42px mobile, `border-radius` ~23% (the iOS tile proportion), hairline ring
+  and a soft shadow, lifting 2px on hover. Source images are 192px so they stay sharp on
+  retina.
+- **EBAAPL's SVG has had its own `rx="12"` stripped** so the CSS radius governs all four
+  tiles identically. Keep it that way if you re-pull it.
+- `alt=""` on all four, deliberately: each tile only restates the project name next to it.
+  (Opposite call from the headshot, which carries real alt text.)
+- The tile is pinned to the **first line of the name** with a negative `margin-top`, not
+  centred: "Kitty Unicorn Dolphin Rider" wraps to two lines on a phone and a centred tile
+  would float to the middle of it. The negative margin rises into the kicker's row, which
+  is harmless -- the kicker is in column 2, the tile in column 1.
+- Every text row is placed in column 2 so kicker, name, description and address stay flush
+  with each other and only the tile hangs out to the left.
 
-Current set: speech bubble (GameTimeTalk), football (EBAAPL), rainbow (KUDR), soap bubble
-with a highlight (Bubble).
+The icons are ~45KB all told, which is more than the 9KB page itself. That is fine -- they
+are separate cached files fetched in parallel, not inlined bytes re-downloaded on every
+visit, which was the problem with the old headshot. Bubble's is the big one (29KB): its
+pixel-art dithering defeats PNG compression. A palette re-encode only helped GameTimeTalk;
+the other two have too many colours to quantize losslessly.
 
 ## The headshot
 
@@ -210,4 +221,6 @@ until curl -s "https://eriksheridan.com/?cb=$RANDOM" | grep -q "What I'm buildin
   by a seven-year-old". Keep real children's names off the public site — see the standing
   rule about never putting a real child's name in code, docs, or anything published.
   The KUDR kicker still reads "Kid designed, dad approved." — Erik kept that deliberately.
-- **4 Nov 2026** — a line icon added to the left of each project entry (see "Entry icons").
+- **4 Nov 2026** — each project entry got an icon in a left gutter. First drawn by hand,
+  then replaced the same day with each project's **real app icon**, pulled from the live
+  sites and styled as a phone home-screen tile (see "Entry icons").
