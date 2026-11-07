@@ -1,0 +1,983 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Save State: your top 3 games by era</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E4E1DB; --surface:#F3F1ED; --ink:#1D2130; --muted:#5B6070; --line:#CBC7C0;
+  --era:#E8762C;
+  --display:"Bricolage Grotesque", "Arial Narrow", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme:light; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){--bg:#151925; --surface:#1F2433; --ink:#ECEAE5; --muted:#9BA1B3; --line:#333A4C; color-scheme:dark;}
+}
+:root[data-theme="dark"]{--bg:#151925; --surface:#1F2433; --ink:#ECEAE5; --muted:#9BA1B3; --line:#333A4C; color-scheme:dark;}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;font-family:var(--body);color:var(--ink);background:color-mix(in srgb, var(--era) 9%, var(--bg));transition:background-color .35s ease;font-size:16px;line-height:1.45;min-height:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--era);outline-offset:2px}
+
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.bar{max-width:1040px;margin:0 auto;padding:.7rem 1rem .6rem;display:flex;flex-wrap:wrap;align-items:center;gap:.6rem 1rem;justify-content:space-between}
+.logo{font-family:var(--display);font-weight:800;font-size:1.35rem;letter-spacing:-.02em;margin:0;display:flex;align-items:center;gap:.45rem}
+.logo i{width:.9rem;height:1.1rem;border-radius:3px 3px 1px 1px;background:var(--era);display:inline-block;box-shadow:inset 0 -4px 0 rgba(0,0,0,.18);transition:background .35s}
+.modes{display:flex;background:var(--bg);border-radius:999px;padding:3px;gap:2px}
+.modes button{border:0;background:none;padding:.4rem .9rem;border-radius:999px;font-size:.9rem;font-weight:700;color:var(--muted)}
+.modes button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+
+.rail{max-width:1040px;margin:0 auto;display:flex;gap:.5rem;overflow-x:auto;padding:.9rem 1rem .2rem;scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.cart{flex:0 0 auto;width:6.6rem;border:0;padding:0;background:none;text-align:left}
+.cart .shell{display:block;height:4.2rem;border-radius:7px 7px 3px 3px;background:var(--surface);border:1px solid var(--line);position:relative;padding:.45rem .5rem;overflow:hidden;transition:transform .2s ease, background .2s}
+.cart .shell::before{content:"";position:absolute;left:.5rem;right:.5rem;top:0;height:5px;border-radius:0 0 3px 3px;background:var(--c)}
+.cart .shell::after{content:"";position:absolute;left:0;right:0;bottom:0;height:6px;background:repeating-linear-gradient(90deg,var(--line) 0 4px,transparent 4px 7px)}
+.cart b{display:block;font-family:var(--display);font-weight:700;font-size:.92rem;line-height:1.1;margin-top:.35rem}
+.cart small{display:block;color:var(--muted);font-size:.74rem;margin-top:.1rem}
+.cart .dot{position:absolute;right:.45rem;top:.55rem;width:.5rem;height:.5rem;border-radius:50%;background:var(--c);opacity:0}
+.cart.done .dot{opacity:1}
+.cart[aria-selected="true"] .shell{background:var(--c);border-color:var(--c);color:#fff;transform:translateY(-4px);box-shadow:0 6px 0 -2px color-mix(in srgb,var(--c) 45%,transparent)}
+.cart[aria-selected="true"] small{color:rgba(255,255,255,.85)}
+.cart[aria-selected="true"] .shell::before,.cart[aria-selected="true"] .dot{background:#fff}
+
+main{max-width:1040px;margin:0 auto;padding:1rem 1rem 7rem}
+.era-head{display:flex;align-items:baseline;flex-wrap:wrap;gap:.2rem 1rem;margin:.6rem 0 1rem}
+.era-head h2{font-family:var(--display);font-weight:800;font-size:clamp(2.2rem,8vw,4rem);line-height:.95;letter-spacing:-.035em;margin:0;color:var(--era);transition:color .35s}
+.era-head p{margin:0;color:var(--muted);max-width:42ch}
+.hint{color:var(--muted);font-size:.92rem;margin:0 0 .8rem;max-width:60ch}
+h3.sub{font-family:var(--display);font-weight:700;font-size:1.15rem;margin:1.4rem 0 .5rem}
+
+/* contender picker */
+.tools{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-bottom:.7rem}
+.search{flex:1 1 14rem;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:.6rem .7rem}
+.grid{display:flex;flex-wrap:wrap;gap:.4rem}
+.chip{display:inline-flex;flex-direction:column;align-items:flex-start;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:.4rem .6rem .4rem 1.9rem;line-height:1.2;position:relative;touch-action:manipulation;max-width:100%}
+.chip::before{content:"";position:absolute;left:.55rem;top:50%;width:.95rem;height:.95rem;margin-top:-.48rem;border-radius:3px;border:2px solid var(--line);background:var(--bg)}
+.chip[aria-pressed="true"]{border-color:var(--era);background:color-mix(in srgb,var(--era) 13%,var(--surface))}
+.chip[aria-pressed="true"]::before{content:attr(data-rank);background:var(--era);border-color:var(--era);color:#fff;font-family:var(--display);font-weight:800;font-size:.72rem;line-height:.95rem;text-align:center;width:1.15rem;height:1.15rem;margin-top:-.58rem;left:.45rem;border:0}
+.chip span{font-weight:700;font-size:.92rem}
+.chip small{color:var(--muted);font-size:.74rem}
+.chip.wi small{color:var(--era);font-weight:700}
+.chip[hidden]{display:none}
+.writein{display:flex;gap:.5rem;flex-wrap:wrap;margin:.2rem 0 0;padding:.7rem;border:1px dashed var(--line);border-radius:8px}
+.writein input{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:.55rem .7rem}
+.writein .t{flex:1 1 12rem}
+.writein .y{width:6.2rem}
+.go{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--surface);border-top:3px solid var(--era);padding:.7rem 1rem calc(.7rem + env(safe-area-inset-bottom,0px))}
+.go-in{max-width:1040px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.go-in p{margin:0;font-size:.92rem}
+.btn{border:0;border-radius:6px;padding:.65rem 1rem;font-weight:700;background:var(--era);color:#fff}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.alt{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.row{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem}
+.linkish{border:0;background:none;color:var(--muted);text-decoration:underline;text-underline-offset:3px;padding:.2rem;font-size:.88rem}
+
+/* face-off */
+.vs{display:grid;grid-template-columns:1fr auto 1fr;gap:.6rem;align-items:stretch;margin-top:.4rem}
+.fight{border:2px solid var(--line);background:var(--surface);border-radius:10px;padding:1.1rem .9rem;text-align:left;display:flex;flex-direction:column;justify-content:space-between;min-height:10rem;transition:border-color .15s, transform .1s}
+.fight:hover{border-color:var(--era)}
+.fight:active{transform:scale(.98)}
+.fight b{font-family:var(--display);font-weight:800;font-size:clamp(1.15rem,4.6vw,1.7rem);line-height:1.05;letter-spacing:-.02em}
+.fight small{color:var(--muted);margin-top:.6rem}
+.fight .seat{font-size:.78rem;font-weight:700;color:var(--era);margin-top:.3rem}
+.vs-mid{align-self:center;font-family:var(--display);font-weight:800;color:var(--era);font-size:1.2rem}
+.prog{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin:1.1rem 0 .3rem}
+.prog i{display:block;height:100%;background:var(--era);transition:width .25s}
+.standing{display:flex;gap:.35rem;flex-wrap:wrap;margin:.3rem 0 0;padding:0;list-style:none;font-size:.85rem}
+.standing li{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:.15rem .6rem}
+
+/* result */
+.podium{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:8px;background:var(--surface);overflow:hidden}
+.podium li{display:grid;grid-template-columns:2.6rem 1fr auto;align-items:center;gap:.5rem;padding:.6rem;border-top:1px solid var(--line)}
+.podium li:first-child{border-top:0;padding:1rem .6rem;background:color-mix(in srgb,var(--era) 12%,var(--surface))}
+.rank{font-family:var(--display);font-weight:800;font-size:1.6rem;color:var(--era);text-align:center;line-height:1}
+.podium li:first-child .rank{font-size:2.6rem}
+.podium b{display:block}
+.podium li:first-child b{font-family:var(--display);font-size:1.6rem;letter-spacing:-.02em;line-height:1.05}
+.podium small{color:var(--muted)}
+.ctl{display:flex;gap:.25rem}
+.ctl button{width:2.2rem;height:2.2rem;border-radius:6px;border:1px solid var(--line);background:var(--bg)}
+.ctl button:disabled{opacity:.35;cursor:default}
+
+/* slots */
+.podium li.open{color:var(--muted)}
+.podium li.open .rank{opacity:.3}
+.podium li.open:first-child{background:none}
+.podium li.open:first-child b{font-family:var(--body);font-size:1rem;font-weight:400}
+.dock-slots{display:flex;gap:.35rem;flex:1;min-width:0}
+.dock-slots span{flex:1;min-width:0;border-radius:5px;background:var(--bg);padding:.35rem .5rem;font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dock-slots span.on{background:color-mix(in srgb,var(--era) 18%,var(--bg));font-weight:700}
+.dock-slots i{font-style:normal;color:var(--era);font-weight:800;margin-right:.25rem}
+/* summary grid */
+.sum{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:.7rem}
+.card{background:var(--surface);border:1px solid var(--line);border-top:6px solid var(--c);border-radius:8px;padding:.8rem .9rem 1rem}
+.card .yrs{font-size:.8rem;color:var(--muted)}
+.card .era-n{font-weight:700;color:var(--c)}
+.card h3{margin:.35rem 0 .2rem;font-family:var(--display);font-weight:800;font-size:1.5rem;letter-spacing:-.02em;line-height:1.05}
+.card h3 b{color:var(--c);margin-right:.35rem}
+.card ol{list-style:none;margin:0;padding:0;font-size:.95rem}
+.card ol b{color:var(--c);margin-right:.35rem}
+.card .none{color:var(--muted);margin:.5rem 0}
+.card.big{grid-column:1/-1;border-top-width:8px;padding:1rem 1.1rem 1.2rem}
+.card.big h3{font-size:clamp(1.9rem,7vw,2.8rem)}
+.card.big ol{font-size:1.1rem}
+.card small{color:var(--muted);font-size:.8rem;margin-left:.3rem;font-weight:400;font-family:var(--body);letter-spacing:0}
+/* lineup */
+.line{position:relative;margin:0;padding:0 0 0 1.4rem;list-style:none}
+.line::before{content:"";position:absolute;left:.42rem;top:.3rem;bottom:.3rem;width:3px;background:var(--line);border-radius:2px}
+.line>li{position:relative;padding:.35rem 0 1.3rem}
+.line>li::before{content:"";position:absolute;left:-1.25rem;top:.7rem;width:.85rem;height:.85rem;border-radius:3px;background:var(--c)}
+.line .yrs{font-size:.8rem;color:var(--muted)}
+.line .era-n{font-weight:700;color:var(--c)}
+.line h3{margin:0;font-family:var(--display);font-weight:800;font-size:1.45rem;letter-spacing:-.02em;line-height:1.1}
+.rest{margin:.25rem 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:.2rem .9rem;font-size:.9rem;color:var(--muted)}
+.rest b{color:var(--c);margin-right:.2rem}
+textarea{width:100%;min-height:10rem;margin-top:.8rem;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);padding:.6rem;font:inherit;font-size:.85rem}
+
+.toast{position:fixed;left:50%;bottom:calc(5rem + env(safe-area-inset-bottom,0px));transform:translate(-50%,150%);opacity:0;background:var(--ink);color:var(--surface);padding:.55rem 1rem;border-radius:999px;font-size:.9rem;z-index:9;transition:transform .2s,opacity .2s;max-width:90vw;text-align:center}
+.toast.on{transform:translate(-50%,0);opacity:1}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+@media (min-width:760px){.cart{width:7.6rem}}
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <h1 class="logo"><i aria-hidden="true"></i>Save State</h1>
+    <div class="modes" role="group" aria-label="View">
+      <button data-mode="rank">Eras</button>
+      <button data-mode="all">All time</button>
+      <button data-mode="summary">Summary</button>
+    </div>
+  </div>
+</header>
+<nav class="rail" role="tablist" aria-label="Eras" id="rail"></nav>
+<main id="main"></main>
+<div id="dock"></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const ERAS = [
+{id:"arcade",name:"Arcade age",years:"1972–1984",c:"#D9661F",blurb:"Quarters, cabinets and the Atari in the den.",list:`
+Pong|1972|Arcade
+Breakout|1976|Arcade
+Combat|1977|Atari 2600
+Space Invaders|1978|Arcade
+Asteroids|1979|Arcade
+Pac-Man|1980|Arcade
+Missile Command|1980|Arcade
+Battlezone|1980|Arcade
+Berzerk|1980|Arcade
+Rally-X|1980|Arcade
+Adventure|1980|Atari 2600
+Zork|1980|PC
+Defender|1981|Arcade
+Donkey Kong|1981|Arcade
+Galaga|1981|Arcade
+Frogger|1981|Arcade
+Centipede|1981|Arcade
+Tempest|1981|Arcade
+Scramble|1981|Arcade
+Qix|1981|Arcade
+Kaboom!|1981|Atari 2600
+Wizardry|1981|Apple II
+Ms. Pac-Man|1982|Arcade
+Q*bert|1982|Arcade
+Joust|1982|Arcade
+Robotron: 2084|1982|Arcade
+Dig Dug|1982|Arcade
+Pole Position|1982|Arcade
+BurgerTime|1982|Arcade
+Tron|1982|Arcade
+Moon Patrol|1982|Arcade
+Zaxxon|1982|Arcade
+Donkey Kong Jr.|1982|Arcade
+Time Pilot|1982|Arcade
+Xevious|1982|Arcade
+Sinistar|1982|Arcade
+Pengo|1982|Arcade
+Jungle Hunt|1982|Arcade
+Pitfall!|1982|Atari 2600
+River Raid|1982|Atari 2600
+Yars’ Revenge|1982|Atari 2600
+Choplifter|1982|Apple II
+Dragon’s Lair|1983|Arcade
+Star Wars|1983|Arcade
+Mario Bros.|1983|Arcade
+Spy Hunter|1983|Arcade
+Track & Field|1983|Arcade
+Mappy|1983|Arcade
+Elevator Action|1983|Arcade
+Crystal Castles|1983|Arcade
+Lode Runner|1983|Apple II
+Ultima III: Exodus|1983|PC
+Marble Madness|1984|Arcade
+Paperboy|1984|Arcade
+Punch-Out!! (arcade)|1984|Arcade
+Kung-Fu Master|1984|Arcade
+1942|1984|Arcade
+Excitebike|1984|NES
+Duck Hunt|1984|NES
+Karateka|1984|Apple II
+Pitfall II: Lost Caverns|1984|Atari 2600
+King’s Quest|1984|PC
+Elite|1984|BBC Micro`},
+{id:"8bit",name:"8-bit",years:"1985–1989",c:"#C4202F",blurb:"The console comes home and never leaves.",list:`
+Super Mario Bros.|1985|NES
+Gradius|1985|Arcade
+Ghosts ’n Goblins|1985|Arcade
+Gauntlet|1985|Arcade
+Ultima IV|1985|PC
+The Bard’s Tale|1985|PC
+The Legend of Zelda|1986|NES
+Metroid|1986|NES
+Castlevania|1986|NES
+Dragon Quest|1986|NES
+Kid Icarus|1986|NES
+Pro Wrestling|1986|NES
+Out Run|1986|Arcade
+Arkanoid|1986|Arcade
+Bubble Bobble|1986|Arcade
+Rampage|1986|Arcade
+Ikari Warriors|1986|Arcade
+Wonder Boy|1986|Arcade
+Alex Kidd in Miracle World|1986|Master System
+Space Quest|1986|PC
+Defender of the Crown|1986|Amiga
+Final Fantasy|1987|NES
+Contra|1987|NES
+Punch-Out!!|1987|NES
+Zelda II: The Adventure of Link|1987|NES
+Mega Man|1987|NES
+Castlevania II: Simon’s Quest|1987|NES
+Faxanadu|1987|NES
+Double Dragon|1987|Arcade
+Street Fighter|1987|Arcade
+R-Type|1987|Arcade
+Shinobi|1987|Arcade
+1943|1987|Arcade
+Phantasy Star|1987|Master System
+Metal Gear|1987|MSX
+Maniac Mansion|1987|PC
+Leisure Suit Larry|1987|PC
+Pirates!|1987|PC
+California Games|1987|PC
+Mega Man 2|1988|NES
+Ninja Gaiden|1988|NES
+Super Mario Bros. 3|1988|NES
+Super Mario Bros. 2|1988|NES
+Dragon Quest III|1988|NES
+Blaster Master|1988|NES
+Bionic Commando|1988|NES
+R.C. Pro-Am|1988|NES
+Ice Hockey|1988|NES
+Bad Dudes|1988|Arcade
+Altered Beast|1988|Arcade
+Wasteland|1988|PC
+Zak McKracken|1988|PC
+John Madden Football|1988|PC
+Tetris|1989|Game Boy
+Super Mario Land|1989|Game Boy
+DuckTales|1989|NES
+Tecmo Bowl|1989|NES
+Castlevania III|1989|NES
+River City Ransom|1989|NES
+Teenage Mutant Ninja Turtles|1989|NES
+TMNT (arcade)|1989|Arcade
+A Boy and His Blob|1989|NES
+Baseball Stars|1989|NES
+Golden Axe|1989|Arcade
+Final Fight|1989|Arcade
+SimCity|1989|PC
+Prince of Persia|1989|Apple II
+Populous|1989|PC`},
+{id:"16bit",name:"16-bit",years:"1990–1995",c:"#6247B0",blurb:"Blast processing, Mode 7 and the console wars.",list:`
+Super Mario World|1990|SNES
+F-Zero|1990|SNES
+Pilotwings|1990|SNES
+ActRaiser|1990|SNES
+Mega Man 3|1990|NES
+Dr. Mario|1990|NES
+The Secret of Monkey Island|1990|PC
+Sonic the Hedgehog|1991|Genesis
+ToeJam & Earl|1991|Genesis
+Street Fighter II|1991|Arcade
+Turtles in Time|1991|Arcade
+The Simpsons (arcade)|1991|Arcade
+A Link to the Past|1991|SNES
+Super Castlevania IV|1991|SNES
+Final Fantasy IV|1991|SNES
+Final Fantasy Adventure|1991|Game Boy
+Battletoads|1991|NES
+Tecmo Super Bowl|1991|NES
+Lemmings|1991|PC
+Civilization|1991|PC
+Another World|1991|PC
+Super Mario Kart|1992|SNES
+Contra III|1992|SNES
+Super Star Wars|1992|SNES
+Mortal Kombat|1992|Arcade
+X-Men (arcade)|1992|Arcade
+Sonic the Hedgehog 2|1992|Genesis
+Streets of Rage 2|1992|Genesis
+Ecco the Dolphin|1992|Genesis
+Kirby’s Dream Land|1992|Game Boy
+Super Mario Land 2|1992|Game Boy
+Wolfenstein 3D|1992|PC
+Dune II|1992|PC
+Ultima Underworld|1992|PC
+Doom|1993|PC
+Myst|1993|PC
+Day of the Tentacle|1993|PC
+Sam & Max Hit the Road|1993|PC
+Secret of Mana|1993|SNES
+Star Fox|1993|SNES
+Mega Man X|1993|SNES
+Super Bomberman|1993|SNES
+Breath of Fire|1993|SNES
+Link’s Awakening|1993|Game Boy
+Kirby’s Adventure|1993|NES
+Gunstar Heroes|1993|Genesis
+Shinobi III|1993|Genesis
+Phantasy Star IV|1993|Genesis
+Aladdin|1993|Genesis
+NHL ’94|1993|Genesis
+NBA Jam|1993|Arcade
+Mortal Kombat II|1993|Arcade
+Virtua Fighter|1993|Arcade
+Daytona USA|1993|Arcade
+Samurai Shodown|1993|Arcade
+Super Metroid|1994|SNES
+Final Fantasy VI|1994|SNES
+Donkey Kong Country|1994|SNES
+EarthBound|1994|SNES
+Super Punch-Out!!|1994|SNES
+Ken Griffey Jr. Baseball|1994|SNES
+Sonic 3 & Knuckles|1994|Genesis
+Earthworm Jim|1994|Genesis
+The Lion King|1994|Genesis
+Killer Instinct|1994|Arcade
+Tekken|1994|Arcade
+Doom II|1994|PC
+Warcraft: Orcs & Humans|1994|PC
+X-COM: UFO Defense|1994|PC
+System Shock|1994|PC
+TIE Fighter|1994|PC
+Chrono Trigger|1995|SNES
+Yoshi’s Island|1995|SNES
+Comix Zone|1995|Genesis
+Vectorman|1995|Genesis
+Wipeout|1995|PlayStation
+Rayman|1995|PlayStation
+Command & Conquer|1995|PC
+Full Throttle|1995|PC
+Dark Forces|1995|PC
+Descent|1995|PC`},
+{id:"3d",name:"Polygon leap",years:"1996–2000",c:"#16808F",blurb:"Games go 3D, discs win, and the analog stick arrives.",list:`
+Super Mario 64|1996|N64
+Wave Race 64|1996|N64
+Mario Kart 64|1996|N64
+Super Mario RPG|1996|SNES
+Pokémon Red & Blue|1996|Game Boy
+Resident Evil|1996|PlayStation
+Crash Bandicoot|1996|PlayStation
+Tomb Raider|1996|PlayStation
+Tekken 2|1996|PlayStation
+Twisted Metal 2|1996|PlayStation
+PaRappa the Rapper|1996|PlayStation
+Diablo|1996|PC
+Quake|1996|PC
+Duke Nukem 3D|1996|PC
+Command & Conquer: Red Alert|1996|PC
+GoldenEye 007|1997|N64
+Star Fox 64|1997|N64
+Diddy Kong Racing|1997|N64
+Turok: Dinosaur Hunter|1997|N64
+Final Fantasy VII|1997|PlayStation
+Castlevania: Symphony of the Night|1997|PlayStation
+Gran Turismo|1997|PlayStation
+Final Fantasy Tactics|1997|PlayStation
+Oddworld: Abe’s Oddysee|1997|PlayStation
+Fallout|1997|PC
+Age of Empires|1997|PC
+Ultima Online|1997|PC
+Ocarina of Time|1998|N64
+Banjo-Kazooie|1998|N64
+Mario Party|1998|N64
+1080° Snowboarding|1998|N64
+Metal Gear Solid|1998|PlayStation
+Resident Evil 2|1998|PlayStation
+Spyro the Dragon|1998|PlayStation
+Tekken 3|1998|PlayStation
+Crash Bandicoot: Warped|1998|PlayStation
+Xenogears|1998|PlayStation
+Parasite Eve|1998|PlayStation
+Suikoden II|1998|PlayStation
+Tenchu: Stealth Assassins|1998|PlayStation
+Sonic Adventure|1998|Dreamcast
+Dance Dance Revolution|1998|Arcade
+Half-Life|1998|PC
+StarCraft|1998|PC
+Grim Fandango|1998|PC
+Baldur’s Gate|1998|PC
+Thief: The Dark Project|1998|PC
+Unreal|1998|PC
+Super Smash Bros.|1999|N64
+Pokémon Gold & Silver|1999|Game Boy
+Silent Hill|1999|PlayStation
+Final Fantasy VIII|1999|PlayStation
+Chrono Cross|1999|PlayStation
+Gran Turismo 2|1999|PlayStation
+Ape Escape|1999|PlayStation
+Medal of Honor|1999|PlayStation
+Soulcalibur|1999|Dreamcast
+Shenmue|1999|Dreamcast
+Crazy Taxi|1999|Arcade
+Planescape: Torment|1999|PC
+System Shock 2|1999|PC
+Counter-Strike|1999|PC
+Unreal Tournament|1999|PC
+Quake III Arena|1999|PC
+EverQuest|1999|PC
+RollerCoaster Tycoon|1999|PC
+Age of Empires II|1999|PC
+Homeworld|1999|PC
+Majora’s Mask|2000|N64
+Perfect Dark|2000|N64
+Paper Mario|2000|N64
+Final Fantasy IX|2000|PlayStation
+Tony Hawk’s Pro Skater 2|2000|PlayStation
+Jet Set Radio|2000|Dreamcast
+Deus Ex|2000|PC
+The Sims|2000|PC
+Diablo II|2000|PC
+Baldur’s Gate II|2000|PC`},
+{id:"6gen",name:"Sixth gen",years:"2001–2005",c:"#2C4FA8",blurb:"Couch co-op, LAN parties and the open city.",list:`
+Halo: Combat Evolved|2001|Xbox
+Grand Theft Auto III|2001|PS2
+Silent Hill 2|2001|PS2
+Ico|2001|PS2
+Final Fantasy X|2001|PS2
+Devil May Cry|2001|PS2
+Jak and Daxter|2001|PS2
+Tony Hawk’s Pro Skater 3|2001|Multi
+Super Smash Bros. Melee|2001|GameCube
+Pikmin|2001|GameCube
+Luigi’s Mansion|2001|GameCube
+Animal Crossing|2001|GameCube
+Advance Wars|2001|GBA
+Max Payne|2001|PC
+Metroid Prime|2002|GameCube
+The Wind Waker|2002|GameCube
+Super Mario Sunshine|2002|GameCube
+Eternal Darkness|2002|GameCube
+Kingdom Hearts|2002|PS2
+Grand Theft Auto: Vice City|2002|PS2
+Ratchet & Clank|2002|PS2
+Sly Cooper|2002|PS2
+Burnout 2|2002|Multi
+Splinter Cell|2002|Xbox
+Morrowind|2002|Multi
+Metroid Fusion|2002|GBA
+Pokémon Ruby & Sapphire|2002|GBA
+Battlefield 1942|2002|PC
+Warcraft III|2002|PC
+Neverwinter Nights|2002|PC
+Mafia|2002|PC
+Hitman 2|2002|Multi
+Knights of the Old Republic|2003|Xbox
+Prince of Persia: The Sands of Time|2003|Multi
+Beyond Good & Evil|2003|Multi
+Max Payne 2|2003|Multi
+SSX 3|2003|Multi
+Silent Hill 3|2003|PS2
+Disgaea|2003|PS2
+Viewtiful Joe|2003|GameCube
+Mario Kart: Double Dash!!|2003|GameCube
+Fire Emblem|2003|GBA
+Call of Duty|2003|PC
+Half-Life 2|2004|PC
+World of Warcraft|2004|PC
+Far Cry|2004|PC
+Doom 3|2004|PC
+The Sims 2|2004|PC
+Rome: Total War|2004|PC
+Grand Theft Auto: San Andreas|2004|PS2
+Metal Gear Solid 3: Snake Eater|2004|PS2
+Katamari Damacy|2004|PS2
+Dragon Quest VIII|2004|PS2
+Burnout 3: Takedown|2004|Multi
+Spider-Man 2|2004|Multi
+Star Wars: Battlefront|2004|Multi
+Halo 2|2004|Xbox
+Ninja Gaiden|2004|Xbox
+Fable|2004|Xbox
+Paper Mario: The Thousand-Year Door|2004|GameCube
+Pikmin 2|2004|GameCube
+Metroid Prime 2: Echoes|2004|GameCube
+Resident Evil 4|2005|GameCube
+Shadow of the Colossus|2005|PS2
+God of War|2005|PS2
+Guitar Hero|2005|PS2
+Kingdom Hearts II|2005|PS2
+Psychonauts|2005|Multi
+Lego Star Wars|2005|Multi
+Star Wars: Battlefront II|2005|Multi
+Destroy All Humans!|2005|Multi
+Jade Empire|2005|Xbox
+Call of Duty 2|2005|PC
+F.E.A.R.|2005|PC
+Civilization IV|2005|PC
+Battlefield 2|2005|PC
+Nintendogs|2005|DS
+Mario Kart DS|2005|DS
+Brain Age|2005|DS
+Phoenix Wright: Ace Attorney|2005|DS`},
+{id:"hd",name:"HD era",years:"2006–2012",c:"#4E8F22",blurb:"Achievements, motion controls and online by default.",list:`
+Wii Sports|2006|Wii
+Twilight Princess|2006|Wii
+Gears of War|2006|Xbox 360
+Dead Rising|2006|Xbox 360
+Oblivion|2006|Multi
+Okami|2006|PS2
+Final Fantasy XII|2006|PS2
+Guitar Hero II|2006|Multi
+New Super Mario Bros.|2006|DS
+Company of Heroes|2006|PC
+BioShock|2007|Multi
+Portal|2007|Multi
+Team Fortress 2|2007|Multi
+Call of Duty 4: Modern Warfare|2007|Multi
+Mass Effect|2007|Xbox 360
+Halo 3|2007|Xbox 360
+Assassin’s Creed|2007|Multi
+Rock Band|2007|Multi
+Uncharted: Drake’s Fortune|2007|PS3
+Super Mario Galaxy|2007|Wii
+Crysis|2007|PC
+Fallout 3|2008|Multi
+Grand Theft Auto IV|2008|Multi
+Left 4 Dead|2008|Multi
+Dead Space|2008|Multi
+Braid|2008|Xbox 360
+Spelunky|2008|PC
+Gears of War 2|2008|Xbox 360
+Fable II|2008|Xbox 360
+Metal Gear Solid 4|2008|PS3
+LittleBigPlanet|2008|PS3
+Super Smash Bros. Brawl|2008|Wii
+Mario Kart Wii|2008|Wii
+World of Goo|2008|Multi
+Spore|2008|PC
+Uncharted 2: Among Thieves|2009|PS3
+Demon’s Souls|2009|PS3
+Batman: Arkham Asylum|2009|Multi
+Assassin’s Creed II|2009|Multi
+Call of Duty: Modern Warfare 2|2009|Multi
+Borderlands|2009|Multi
+Left 4 Dead 2|2009|Multi
+Dragon Age: Origins|2009|Multi
+Plants vs. Zombies|2009|PC
+League of Legends|2009|PC
+Angry Birds|2009|iOS
+Mass Effect 2|2010|Multi
+Red Dead Redemption|2010|Multi
+Fallout: New Vegas|2010|Multi
+Super Meat Boy|2010|Multi
+Limbo|2010|Xbox 360
+Halo: Reach|2010|Xbox 360
+God of War III|2010|PS3
+Super Mario Galaxy 2|2010|Wii
+Xenoblade Chronicles|2010|Wii
+StarCraft II|2010|PC
+Minecraft|2011|PC
+Portal 2|2011|Multi
+Skyrim|2011|Multi
+Dark Souls|2011|Multi
+Batman: Arkham City|2011|Multi
+Bastion|2011|Multi
+Rayman Origins|2011|Multi
+Uncharted 3|2011|PS3
+Skyward Sword|2011|Wii
+The Witcher 2|2011|PC
+Terraria|2011|PC
+Journey|2012|PS3
+Mass Effect 3|2012|Multi
+The Walking Dead|2012|Multi
+Dishonored|2012|Multi
+XCOM: Enemy Unknown|2012|Multi
+Far Cry 3|2012|Multi
+Borderlands 2|2012|Multi
+Sleeping Dogs|2012|Multi
+Halo 4|2012|Xbox 360
+Fez|2012|Xbox 360
+Hotline Miami|2012|PC
+FTL: Faster Than Light|2012|PC
+Diablo III|2012|PC
+Guild Wars 2|2012|PC`},
+{id:"open",name:"Open worlds",years:"2013–2019",c:"#C08A0E",blurb:"Prestige epics and the indie breakout.",list:`
+The Last of Us|2013|PS3
+Grand Theft Auto V|2013|Multi
+BioShock Infinite|2013|Multi
+Tomb Raider|2013|Multi
+Gone Home|2013|PC
+Papers, Please|2013|PC
+Dota 2|2013|PC
+Super Mario 3D World|2013|Wii U
+A Link Between Worlds|2013|3DS
+Hearthstone|2014|PC
+Dark Souls II|2014|Multi
+Shovel Knight|2014|Multi
+Destiny|2014|Multi
+Alien: Isolation|2014|Multi
+Shadow of Mordor|2014|Multi
+Dragon Age: Inquisition|2014|Multi
+Mario Kart 8|2014|Wii U
+Bayonetta 2|2014|Wii U
+Super Smash Bros. for Wii U|2014|Wii U
+The Witcher 3: Wild Hunt|2015|Multi
+Bloodborne|2015|PS4
+Undertale|2015|PC
+Metal Gear Solid V: The Phantom Pain|2015|Multi
+Fallout 4|2015|Multi
+Rocket League|2015|Multi
+Rainbow Six Siege|2015|Multi
+Life Is Strange|2015|Multi
+Ori and the Blind Forest|2015|Multi
+Until Dawn|2015|PS4
+Splatoon|2015|Wii U
+Stardew Valley|2016|PC
+Persona 5|2016|PS4
+Overwatch|2016|Multi
+Doom|2016|Multi
+Uncharted 4: A Thief’s End|2016|PS4
+Inside|2016|Multi
+Dark Souls III|2016|Multi
+Titanfall 2|2016|Multi
+Hitman|2016|Multi
+Firewatch|2016|Multi
+Overcooked|2016|Multi
+Pokémon Go|2016|Mobile
+Breath of the Wild|2017|Switch
+Super Mario Odyssey|2017|Switch
+Hollow Knight|2017|PC
+Fortnite|2017|Multi
+Nier: Automata|2017|Multi
+Horizon Zero Dawn|2017|PS4
+Cuphead|2017|Multi
+PUBG: Battlegrounds|2017|PC
+Prey|2017|Multi
+Resident Evil 7|2017|Multi
+Divinity: Original Sin 2|2017|PC
+Assassin’s Creed Origins|2017|Multi
+Destiny 2|2017|Multi
+Celeste|2018|Multi
+God of War|2018|PS4
+Red Dead Redemption 2|2018|Multi
+Monster Hunter: World|2018|Multi
+Marvel’s Spider-Man|2018|PS4
+Return of the Obra Dinn|2018|PC
+Into the Breach|2018|PC
+Super Smash Bros. Ultimate|2018|Switch
+Dead Cells|2018|Multi
+Subnautica|2018|PC
+Among Us|2018|Multi
+Sekiro: Shadows Die Twice|2019|Multi
+Disco Elysium|2019|PC
+Resident Evil 2 (remake)|2019|Multi
+Control|2019|Multi
+Outer Wilds|2019|Multi
+Apex Legends|2019|Multi
+Death Stranding|2019|PS4
+Fire Emblem: Three Houses|2019|Switch
+Luigi’s Mansion 3|2019|Switch
+Untitled Goose Game|2019|Multi
+Slay the Spire|2019|Multi
+Star Wars Jedi: Fallen Order|2019|Multi`},
+{id:"now",name:"Right now",years:"2020–2026",c:"#C7337E",blurb:"Soulslikes go mainstream and small teams take the crown.",list:`
+Hades|2020|Multi
+Animal Crossing: New Horizons|2020|Switch
+Cyberpunk 2077|2020|Multi
+Doom Eternal|2020|Multi
+Half-Life: Alyx|2020|VR
+Ori and the Will of the Wisps|2020|Multi
+Final Fantasy VII Remake|2020|PS4
+The Last of Us Part II|2020|PS4
+Ghost of Tsushima|2020|PS4
+Fall Guys|2020|Multi
+Genshin Impact|2020|Multi
+Spelunky 2|2020|Multi
+Valheim|2021|PC
+It Takes Two|2021|Multi
+Resident Evil Village|2021|Multi
+Ratchet & Clank: Rift Apart|2021|PS5
+Psychonauts 2|2021|Multi
+Metroid Dread|2021|Switch
+Forza Horizon 5|2021|Multi
+Inscryption|2021|PC
+Deathloop|2021|Multi
+Halo Infinite|2021|Multi
+Elden Ring|2022|Multi
+God of War Ragnarök|2022|PS5
+Vampire Survivors|2022|Multi
+Horizon Forbidden West|2022|PS5
+Kirby and the Forgotten Land|2022|Switch
+Stray|2022|Multi
+Xenoblade Chronicles 3|2022|Switch
+Pentiment|2022|Multi
+Tunic|2022|Multi
+Pokémon Scarlet & Violet|2022|Switch
+Tears of the Kingdom|2023|Switch
+Baldur’s Gate 3|2023|Multi
+Resident Evil 4 (remake)|2023|Multi
+Super Mario Bros. Wonder|2023|Switch
+Alan Wake 2|2023|Multi
+Marvel’s Spider-Man 2|2023|PS5
+Hi-Fi Rush|2023|Multi
+Dead Space (remake)|2023|Multi
+Star Wars Jedi: Survivor|2023|Multi
+Street Fighter 6|2023|Multi
+Diablo IV|2023|Multi
+Final Fantasy XVI|2023|PS5
+Armored Core VI|2023|Multi
+Lies of P|2023|Multi
+Cocoon|2023|Multi
+Starfield|2023|Multi
+Final Fantasy VII Rebirth|2024|PS5
+Astro Bot|2024|PS5
+Balatro|2024|Multi
+Helldivers 2|2024|Multi
+Prince of Persia: The Lost Crown|2024|Multi
+Palworld|2024|Multi
+Like a Dragon: Infinite Wealth|2024|Multi
+Stellar Blade|2024|PS5
+Black Myth: Wukong|2024|Multi
+Metaphor: ReFantazio|2024|Multi
+Indiana Jones and the Great Circle|2024|Multi
+Animal Well|2024|Multi
+UFO 50|2024|PC
+Clair Obscur: Expedition 33|2025|Multi
+Kingdom Come: Deliverance II|2025|Multi
+Hollow Knight: Silksong|2025|Multi
+Hades II|2025|Multi
+Monster Hunter Wilds|2025|Multi
+Split Fiction|2025|Multi
+Blue Prince|2025|Multi
+Assassin’s Creed Shadows|2025|Multi
+Death Stranding 2: On the Beach|2025|PS5
+Ghost of Yōtei|2025|PS5
+Elden Ring Nightreign|2025|Multi
+Mario Kart World|2025|Switch 2
+Donkey Kong Bananza|2025|Switch 2
+Metroid Prime 4: Beyond|2025|Switch
+Silent Hill f|2025|Multi
+Pokémon Legends: Z-A|2025|Switch
+Battlefield 6|2025|Multi
+Resident Evil Requiem|2026|Multi
+Forza Horizon 6|2026|Multi
+Mina the Hollower|2026|Multi
+Big Walk|2026|Multi`}
+];
+
+const GAME = {};
+ERAS.forEach(e => {
+  e.ids = e.list.trim().split("\n").map((ln,i) => {
+    const [t,y,p] = ln.split("|"); const id = e.id+"-"+i;
+    GAME[id] = {t, y:+y, p}; return id;
+  });
+});
+
+const KEY = "save-state-v3";
+let S = {era:"arcade", mode:"rank", data:{}, custom:{}, allTime:[]};
+try {
+  const raw = localStorage.getItem(KEY) || localStorage.getItem("save-state-v2");
+  if (raw){ const o = JSON.parse(raw); S.era = o.era || S.era; S.custom = o.custom || {}; S.allTime = o.allTime || []; if (["rank","all","summary"].includes(o.mode)) S.mode = o.mode;
+    for (const k in (o.data||{})) S.data[k] = {top:(o.data[k].top||[]).slice(0,3)}; }
+} catch(e) {}
+Object.values(S.custom).flat().forEach(g => GAME[g.id] = {t:g.t, y:g.y, p:"Write-in", wi:true});
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} };
+const era = () => ERAS.find(e => e.id === S.era) || ERAS[0];
+const D = (id = S.era) => S.data[id] || (S.data[id] = {top:[]});
+const allIds = e => e.ids.concat((S.custom[e.id] || []).map(g => g.id));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $ = s => document.querySelector(s);
+const meta = g => g.wi ? (g.y ? g.y+", write-in" : "Write-in") : `${g.y}, ${esc(g.p)}`;
+const isLast = () => era() === ERAS[ERAS.length-1];
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("on"), 2200); }
+
+const ALL_C = "#9A6B1F";
+const eraOf = id => ERAS.find(e => ((S.data[e.id]||{}).top||[]).includes(id));
+const pool = () => ERAS.flatMap(e => (S.data[e.id]||{}).top || []);
+const need = () => Math.min(3, pool().length);
+const list = () => S.mode === "all" ? S.allTime : D().top;
+const setList = v => { if (S.mode === "all") S.allTime = v; else D().top = v; };
+const metaAll = id => { const g = GAME[id], e = eraOf(id); return `${g.y ? g.y + ", " : ""}${e ? e.name : ""}`; };
+
+function renderRail(){
+  $("#rail").innerHTML = ERAS.map(e => `
+    <button class="cart ${(S.data[e.id]||{}).top?.length ? "done" : ""}" role="tab" aria-selected="${e.id === S.era}" data-era="${e.id}" style="--c:${e.c}">
+      <span class="shell"><span class="dot"></span><b>${e.name}</b><small>${e.years}</small></span>
+    </button>`).join("");
+  const cur = $(".cart[aria-selected=true]"); if (cur) cur.scrollIntoView({block:"nearest", inline:"nearest"});
+}
+
+function slots(){
+  const top = list(), all = S.mode === "all";
+  return [0,1,2].map(i => {
+    const id = top[i];
+    if (!id) return `<li class="open"><span class="rank">${i+1}</span><span><b>Pick your${all ? " all-time" : ""} #${i+1}</b></span><span></span></li>`;
+    const g = GAME[id];
+    return `<li><span class="rank">${i+1}</span><span><b>${esc(g.t)}</b><small>${all ? metaAll(id) : meta(g)}</small></span>
+    <span class="ctl"><button data-act="up" data-i="${i}" aria-label="Move ${esc(g.t)} up" ${i===0?"disabled":""}>↑</button><button data-act="down" data-i="${i}" aria-label="Move ${esc(g.t)} down" ${i===top.length-1?"disabled":""}>↓</button><button data-act="remove" data-i="${i}" aria-label="Remove ${esc(g.t)}">✕</button></span></li>`;
+  }).join("");
+}
+function chipHtml(id, sub){
+  const g = GAME[id], r = list().indexOf(id) + 1;
+  return `<button class="chip ${g.wi?"wi":""}" data-pick="${id}" aria-pressed="${r>0}" data-rank="${r||""}"><span>${esc(g.t)}</span><small>${sub}</small></button>`;
+}
+function viewRank(){
+  const e = era();
+  const ids = allIds(e).slice().sort((a,b) => (GAME[a].y||9999) - (GAME[b].y||9999));
+  return `<div class="era-head"><h2>${e.name}</h2><p>${e.years}. ${e.blurb}</p></div>
+  <ol class="podium" id="slots">${slots()}</ol>
+  <h3 class="sub">Choose your three</h3>
+  <p class="hint">Tap games in order: first tap is #1. Tap a pick again to remove it.</p>
+  <div class="tools"><input class="search" id="q" type="search" placeholder="Search ${ids.length} games" aria-label="Search games"></div>
+  <div class="grid" id="grid">${ids.map(id => chipHtml(id, meta(GAME[id]))).join("")}</div>
+  <h3 class="sub">Missing one?</h3>
+  <form class="writein" id="wi">
+    <input class="t" name="t" placeholder="Game title" aria-label="Game title" maxlength="80" required>
+    <input class="y" name="y" placeholder="Year" aria-label="Year (optional)" inputmode="numeric" maxlength="4">
+    <button class="btn" type="submit">Add write-in</button>
+  </form>`;
+}
+function viewAll(){
+  const p = pool();
+  if (p.length < 2) return `<div class="era-head"><h2>All time</h2><p>The final cut, from your era picks.</p></div>
+    <p class="hint">Rank at least two eras first. Your all-time top 3 can only come from the games you picked there.</p>
+    <div class="row"><button class="btn" data-mode="rank">Rank eras</button></div>`;
+  return `<div class="era-head"><h2>All time</h2><p>${p.length} finalists from ${ERAS.filter(e => (S.data[e.id]||{}).top?.length).length} eras. Only three make it.</p></div>
+  <ol class="podium" id="slots">${slots()}</ol>
+  <h3 class="sub">Your finalists</h3>
+  <p class="hint">Tap your all-time #1, #2 and #3 in order.</p>
+  <div class="grid" id="grid">${ERAS.map(e => ((S.data[e.id]||{}).top||[]).map((id,i) => chipHtml(id, `${e.name} #${i+1}`)).join("")).join("")}</div>`;
+}
+function dock(){
+  const top = list(), all = S.mode === "all";
+  if (all && pool().length < 2) return "";
+  let label, dis = "";
+  if (all){ label = "See summary"; if (top.length < need()) dis = "disabled"; }
+  else label = isLast() ? "Pick all-time top 3" : top.length ? "Next era" : "Skip era";
+  return `<div class="go"><div class="go-in">
+    <div class="dock-slots">${[0,1,2].map(i => top[i] ? `<span class="on"><i>${i+1}</i>${esc(GAME[top[i]].t)}</span>` : `<span><i>${i+1}</i>—</span>`).join("")}</div>
+    <button class="btn" data-act="next" ${dis}>${label}</button></div></div>`;
+}
+function refresh(){
+  const top = list();
+  $("#slots").innerHTML = slots();
+  document.querySelectorAll("#grid .chip").forEach(c => { const r = top.indexOf(c.dataset.pick) + 1; c.setAttribute("aria-pressed", r>0); c.dataset.rank = r || ""; });
+  $("#dock").innerHTML = dock();
+  if (S.mode === "rank") renderRail();
+  save();
+}
+
+function summaryText(){
+  const at = S.allTime.length ? "ALL-TIME TOP 3\n" + S.allTime.map((id,i) => `${i+1}. ${GAME[id].t}`).join("\n") + "\n\n" : "";
+  return "My top 3 games by era\n\n" + at + ERAS.map(e => { const t = (S.data[e.id]||{}).top || [];
+    return `${e.name} (${e.years})\n` + (t.length ? t.map((id,i) => `${i+1}. ${GAME[id].t}`).join("\n") : "Not ranked yet"); }).join("\n\n");
+}
+function viewSummary(){
+  const done = ERAS.filter(e => (S.data[e.id]||{}).top?.length).length, at = S.allTime;
+  const allCard = at.length
+    ? `<section class="card big" style="--c:${ALL_C}"><span class="yrs"><span class="era-n">All time</span></span>
+       <h3><b>1</b>${esc(GAME[at[0]].t)}<small>${metaAll(at[0])}</small></h3>
+       <ol>${at.slice(1).map((id,i) => `<li><b>${i+2}</b>${esc(GAME[id].t)} <small>${metaAll(id)}</small></li>`).join("")}</ol></section>`
+    : `<section class="card big" style="--c:${ALL_C}"><span class="yrs"><span class="era-n">All time</span></span>
+       <p class="none">Not picked yet.</p><button class="btn alt" data-mode="all">Pick your all-time top 3</button></section>`;
+  return `<div class="era-head"><h2 style="color:var(--ink)">Your picks</h2><p>${done} of ${ERAS.length} eras ranked.</p></div>
+  <div class="sum">${allCard}${ERAS.map(e => { const t = (S.data[e.id]||{}).top || [];
+    return `<section class="card" style="--c:${e.c}"><span class="yrs"><span class="era-n">${e.name}</span>, ${e.years}</span>
+    ${t.length ? `<h3><b>1</b>${esc(GAME[t[0]].t)}</h3><ol>${t.slice(1).map((id,i) => `<li><b>${i+2}</b>${esc(GAME[id].t)}</li>`).join("")}</ol>`
+      : `<p class="none">Not ranked yet.</p><button class="btn alt" data-goto="${e.id}">Rank this era</button>`}</section>`; }).join("")}</div>
+  <div class="row"><button class="btn" data-act="copy">Copy my picks</button><button class="btn alt" data-goto="arcade">Edit era picks</button></div><div id="copyout"></div>`;
+}
+
+function render(){
+  const p = new Set(pool()); S.allTime = S.allTime.filter(id => p.has(id));
+  document.documentElement.style.setProperty("--era", S.mode === "summary" ? "#7A7F8F" : S.mode === "all" ? ALL_C : era().c);
+  document.querySelectorAll(".modes button").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode === S.mode));
+  $("#rail").style.display = S.mode === "rank" ? "" : "none";
+  if (S.mode === "rank") renderRail();
+  $("#main").innerHTML = S.mode === "summary" ? viewSummary() : S.mode === "all" ? viewAll() : viewRank();
+  $("#dock").innerHTML = S.mode === "summary" ? "" : dock();
+}
+
+document.addEventListener("click", ev => {
+  const t = ev.target.closest("button"); if (!t || t.form) return;
+  if (t.dataset.mode){ S.mode = t.dataset.mode; save(); render(); window.scrollTo({top:0}); return; }
+  if (t.dataset.era){ S.era = t.dataset.era; save(); render(); return; }
+  if (t.dataset.goto){ S.era = t.dataset.goto; S.mode = "rank"; save(); render(); window.scrollTo({top:0}); return; }
+  const top = list().slice();
+  if (t.dataset.pick){
+    const id = t.dataset.pick;
+    if (top.includes(id)) setList(top.filter(x => x !== id));
+    else if (top.length >= 3) return toast("You’ve picked 3. Remove one to swap it out.");
+    else setList(top.concat(id));
+    return refresh();
+  }
+  const i = +t.dataset.i;
+  switch (t.dataset.act){
+    case "up": [top[i-1], top[i]] = [top[i], top[i-1]]; setList(top); return refresh();
+    case "down": [top[i+1], top[i]] = [top[i], top[i+1]]; setList(top); return refresh();
+    case "remove": top.splice(i,1); setList(top); return refresh();
+    case "next": {
+      if (S.mode === "all") S.mode = "summary";
+      else if (isLast()) S.mode = "all";
+      else S.era = ERAS[ERAS.indexOf(era())+1].id;
+      save(); render(); window.scrollTo({top:0}); return;
+    }
+    case "copy": {
+      const txt = summaryText();
+      (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject())
+        .then(() => toast("Picks copied."))
+        .catch(() => { $("#copyout").innerHTML = `<textarea readonly aria-label="Your picks">${esc(txt)}</textarea>`; toast("Select the text below to copy it."); });
+      return;
+    }
+  }
+});
+
+document.addEventListener("input", ev => {
+  if (ev.target.id !== "q") return;
+  const q = ev.target.value.trim().toLowerCase();
+  document.querySelectorAll("#grid .chip").forEach(c => c.hidden = q && !c.textContent.toLowerCase().includes(q));
+});
+
+document.addEventListener("submit", ev => {
+  if (ev.target.id !== "wi") return;
+  ev.preventDefault();
+  const f = ev.target, t = f.t.value.trim(), y = parseInt(f.y.value, 10);
+  if (!t) return;
+  const e = era(), lst = S.custom[e.id] || (S.custom[e.id] = []);
+  const id = "wi-" + e.id + "-" + Date.now().toString(36);
+  const g = {id, t, y: y >= 1950 && y <= 2100 ? y : null};
+  lst.push(g); GAME[id] = {t, y:g.y, p:"Write-in", wi:true};
+  const d = D(), added = d.top.length < 3;
+  if (added) d.top.push(id);
+  save(); render();
+  toast(added ? `Added ${t} as your #${d.top.length}.` : `Added ${t}. Remove a pick to rank it.`);
+});
+
+render();
+</script>
+</body>
+</html>
