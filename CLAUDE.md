@@ -168,7 +168,7 @@ Open Graph and Twitter card tags live in the `<head>` of both pages, pointing `o
 blue link with no card. **Keep `og:url` and `og:image` absolute**; relative URLs do not work
 for previews.
 
-## games.html — Save State
+## games.html — Three Lives
 
 A second standalone page in this repo: a ranker for your top 3 games per era, then an
 all-time 3. Self-contained, no build, no dependencies beyond Google Fonts. Added 6 Nov 2026
@@ -207,7 +207,10 @@ Era placement follows the game's **release year**, not where a respondent filed 
 
 ### Sharing
 
-Picks live in `localStorage` under `save-state-v3`. Three ways out, all on the Summary tab:
+Picks live in `localStorage` under `save-state-v3`. **That key keeps the old name on
+purpose** — the app was called Save State until 7 Nov 2026. Renaming the key would make
+every existing visitor's picks unreadable, which is a silent data loss, not a cosmetic
+tidy-up. Leave it, and leave the `save-state-v2` fallback read beside it. Three ways out, all on the Summary tab:
 
 - **Copy share link** packs the picks into the URL hash. Eras become their index, games
   their index within the era, write-ins ride along as `[title, year]`; the JSON is
@@ -221,8 +224,8 @@ Picks live in `localStorage` under `save-state-v3`. Three ways out, all on the S
 **Shared write-ins are attacker-controlled text.** They go through the same `esc()` as every
 other title — a link carrying a script tag renders it as literal text. Keep it that way.
 
-The hub tile `icons/savestate.svg` is drawn from the app's own mark (orange cartridge on its
-cream surface); Save State ships no icon of its own, so there is nothing upstream to re-pull.
+The hub tile `icons/threelives.svg` is drawn from the app's own mark (orange cartridge on its
+cream surface); Three Lives ships no icon of its own, so there is nothing upstream to re-pull.
 
 ## Deploying and verifying
 
@@ -277,9 +280,9 @@ until curl -s "https://eriksheridan.com/?cb=$RANDOM" | grep -q "What I'm buildin
   by a seven-year-old". Keep real children's names off the public site — see the standing
   rule about never putting a real child's name in code, docs, or anything published.
   The KUDR kicker still reads "Kid designed, dad approved." — Erik kept that deliberately.
-- **6 Nov 2026** — `games.html` (Save State) added as a second page in this repo and
+- **6 Nov 2026** — `games.html` (Three Lives, named Save State until 7 Nov) added to this repo and
   linked as a fifth hub entry, with share links added to it. No subdomain: it is a path
-  in this repo (see "games.html — Save State").
+  in this repo (see "games.html — Three Lives").
 - **4 Nov 2026** — each project entry got an icon in a left gutter. First drawn by hand,
   then replaced the same day with each project's **real app icon**, pulled from the live
   sites and styled as a phone home-screen tile (see "Entry icons").
