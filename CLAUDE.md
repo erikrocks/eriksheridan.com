@@ -184,6 +184,27 @@ Anything else that lands in this repo is the same: just add the file.
 `games/index.html` to get a clean URL — you already have one. (The hub entry links
 `games.html` explicitly; either spelling works.)
 
+### Adding games to the catalogue — APPEND ONLY
+
+**Game IDs are positional.** `GAME` is built as `<era-id>-<line index>`, so `8bit-42` just
+means "the 43rd line of the 8-bit list". Those IDs are what `localStorage` stores and what
+share links pack. **Inserting a game mid-list silently renames everyone's saved picks** —
+every game after the insertion point shifts by one, and old share links decode to the
+wrong titles. There is no version check that would catch it.
+
+So: add a new game as the **last line of its era's list**, never in year order. The grid
+sorts by year at render time (`viewRank()`), so an appended game still appears in its
+correct year slot — source order is invisible to the user. Then update the game count in
+the hub's `index.html` entry blurb, which is hardcoded.
+
+To check you haven't broken anything, diff old IDs against new:
+
+```
+node -e 'const fs=require("fs");const load=f=>{const E=eval("["+/const ERAS = \[([\s\S]*?)\n\];/.exec(fs.readFileSync(f,"utf8"))[1]+"]");const G={};E.forEach(e=>e.list.trim().split("\n").forEach((l,i)=>G[e.id+"-"+i]=l.split("|")[0]));return G;};const A=load("OLD.html"),B=load("games.html");let bad=0;for(const k in A)if(A[k]!==B[k]){bad++;console.log("CHANGED",k,A[k],"->",B[k]);}console.log("remapped:",bad);'
+```
+
+Era placement follows the game's **release year**, not where a respondent filed it.
+
 ### Sharing
 
 Picks live in `localStorage` under `save-state-v3`. Three ways out, all on the Summary tab:
