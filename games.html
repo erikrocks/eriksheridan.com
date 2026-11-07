@@ -144,6 +144,7 @@ h3.sub{font-family:var(--display);font-weight:700;font-size:1.15rem;margin:1.4re
 .rest b{color:var(--c);margin-right:.2rem}
 textarea{width:100%;min-height:10rem;margin-top:.8rem;border:1px solid var(--line);border-radius:6px;background:var(--surface);color:var(--ink);padding:.6rem;font:inherit;font-size:.85rem}
 
+.banner{margin:.9rem 0 0;padding:.6rem .8rem;border-left:4px solid var(--era);background:var(--surface);border-radius:0 6px 6px 0;font-size:.92rem;color:var(--muted)}
 .toast{position:fixed;left:50%;bottom:calc(5rem + env(safe-area-inset-bottom,0px));transform:translate(-50%,150%);opacity:0;background:var(--ink);color:var(--surface);padding:.55rem 1rem;border-radius:999px;font-size:.9rem;z-index:9;transition:transform .2s,opacity .2s;max-width:90vw;text-align:center}
 .toast.on{transform:translate(-50%,0);opacity:1}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
@@ -799,13 +800,18 @@ ERAS.forEach(e => {
 
 const KEY = "save-state-v3";
 let S = {era:"arcade", mode:"rank", data:{}, custom:{}, allTime:[]};
+let SHARED = false, MINE = null, warnedSave = false;
 try {
   const raw = localStorage.getItem(KEY) || localStorage.getItem("save-state-v2");
   if (raw){ const o = JSON.parse(raw); S.era = o.era || S.era; S.custom = o.custom || {}; S.allTime = o.allTime || []; if (["rank","all","summary"].includes(o.mode)) S.mode = o.mode;
     for (const k in (o.data||{})) S.data[k] = {top:(o.data[k].top||[]).slice(0,3)}; }
 } catch(e) {}
 Object.values(S.custom).flat().forEach(g => GAME[g.id] = {t:g.t, y:g.y, p:"Write-in", wi:true});
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {} };
+const save = () => {
+  if (SHARED) return;
+  try { localStorage.setItem(KEY, JSON.stringify(S)); }
+  catch(e){ if (!warnedSave){ warnedSave = true; toast("Can’t save — your browser is blocking storage."); } }
+};
 const era = () => ERAS.find(e => e.id === S.era) || ERAS[0];
 const D = (id = S.era) => S.data[id] || (S.data[id] = {top:[]});
 const allIds = e => e.ids.concat((S.custom[e.id] || []).map(g => g.id));
@@ -903,18 +909,83 @@ function viewSummary(){
        <h3><b>1</b>${esc(GAME[at[0]].t)}<small>${metaAll(at[0])}</small></h3>
        <ol>${at.slice(1).map((id,i) => `<li><b>${i+2}</b>${esc(GAME[id].t)} <small>${metaAll(id)}</small></li>`).join("")}</ol></section>`
     : `<section class="card big" style="--c:${ALL_C}"><span class="yrs"><span class="era-n">All time</span></span>
-       <p class="none">Not picked yet.</p><button class="btn alt" data-mode="all">Pick your all-time top 3</button></section>`;
-  return `<div class="era-head"><h2 style="color:var(--ink)">Your picks</h2><p>${done} of ${ERAS.length} eras ranked.</p></div>
+       <p class="none">Not picked yet.</p>${SHARED ? "" : `<button class="btn alt" data-mode="all">Pick your all-time top 3</button>`}</section>`;
+  return `${SHARED ? `<p class="banner">You’re looking at someone’s shared picks. Nothing here is saved to your browser.</p>` : ""}
+  <div class="era-head"><h2 style="color:var(--ink)">${SHARED ? "Shared picks" : "Your picks"}</h2><p>${done} of ${ERAS.length} eras ranked.</p></div>
   <div class="sum">${allCard}${ERAS.map(e => { const t = (S.data[e.id]||{}).top || [];
     return `<section class="card" style="--c:${e.c}"><span class="yrs"><span class="era-n">${e.name}</span>, ${e.years}</span>
     ${t.length ? `<h3><b>1</b>${esc(GAME[t[0]].t)}</h3><ol>${t.slice(1).map((id,i) => `<li><b>${i+2}</b>${esc(GAME[id].t)}</li>`).join("")}</ol>`
-      : `<p class="none">Not ranked yet.</p><button class="btn alt" data-goto="${e.id}">Rank this era</button>`}</section>`; }).join("")}</div>
-  <div class="row"><button class="btn" data-act="copy">Copy my picks</button><button class="btn alt" data-goto="arcade">Edit era picks</button></div><div id="copyout"></div>`;
+      : `<p class="none">Not ranked yet.</p>${SHARED ? "" : `<button class="btn alt" data-goto="${e.id}">Rank this era</button>`}`}</section>`; }).join("")}</div>
+  ${SHARED
+    ? `<div class="row"><button class="btn" data-act="mine">Make my own picks</button></div>`
+    : `<div class="row"><button class="btn" data-act="link" ${done?"":"disabled"}>Copy share link</button>
+       <button class="btn alt" data-act="copy" ${done?"":"disabled"}>Copy as text</button>
+       <button class="btn alt" data-goto="arcade">Edit era picks</button></div>`}
+  <div id="copyout"></div>`;
+}
+
+/* ---- share link -------------------------------------------------------
+   Picks are packed into the URL hash so a link carries them with no server.
+   Compact on purpose: eras become their index, catalogue games their index
+   within the era, write-ins ride along as title+year. ------------------- */
+const b64u   = str => { let b=""; new TextEncoder().encode(str).forEach(c => b += String.fromCharCode(c));
+                        return btoa(b).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,""); };
+const unb64u = str => new TextDecoder().decode(
+                        Uint8Array.from(atob(str.replace(/-/g,"+").replace(/_/g,"/")), c => c.charCodeAt(0)));
+
+function pack(){
+  const d = [], w = [];
+  ERAS.forEach(e => {
+    const cust = S.custom[e.id] || [], used = [];
+    d.push(((S.data[e.id]||{}).top || []).map(id => {
+      if (!id.startsWith("wi-")) return +id.slice(e.id.length + 1);
+      const g = cust.find(x => x.id === id); if (!g) return null;
+      let k = used.indexOf(g); if (k < 0) k = used.push(g) - 1;
+      return "w" + k;
+    }).filter(v => v !== null));
+    w.push(used.map(g => [g.t, g.y || 0]));
+  });
+  const a = S.allTime.map(id => {
+    const e = eraOf(id); if (!e) return null;
+    const pos = ((S.data[e.id]||{}).top || []).indexOf(id);
+    return pos < 0 ? null : [ERAS.indexOf(e), pos];
+  }).filter(Boolean);
+  return {v:1, d, w, a};
+}
+function unpack(o){
+  const st = {era:ERAS[0].id, mode:"summary", data:{}, custom:{}, allTime:[]};
+  (o.d || []).forEach((top, ei) => {
+    const e = ERAS[ei]; if (!e || !Array.isArray(top)) return;
+    const wl = (o.w || [])[ei] || [];
+    const ids = top.map(v => {
+      if (typeof v === "string" && v[0] === "w"){
+        const src = wl[+v.slice(1)]; if (!src) return null;
+        const id = "sw-" + ei + "-" + v.slice(1);
+        GAME[id] = {t:String(src[0]).slice(0,80), y:+src[1] || null, p:"Write-in", wi:true};
+        return id;
+      }
+      const id = e.id + "-" + v; return GAME[id] ? id : null;
+    }).filter(Boolean).slice(0,3);
+    if (ids.length) st.data[e.id] = {top:ids};
+  });
+  st.allTime = (o.a || []).map(v => {
+    const e = ERAS[(v||[])[0]]; if (!e) return null;
+    return ((st.data[e.id]||{}).top || [])[v[1]] || null;
+  }).filter(Boolean).slice(0,3);
+  return st;
+}
+const shareUrl = () => location.origin + location.pathname + "#s=" + b64u(JSON.stringify(pack()));
+function offer(txt, ok){
+  (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject())
+    .then(() => toast(ok))
+    .catch(() => { $("#copyout").innerHTML = `<textarea readonly aria-label="Copy this">${esc(txt)}</textarea>`;
+                   toast("Select the text below to copy it."); });
 }
 
 function render(){
   const p = new Set(pool()); S.allTime = S.allTime.filter(id => p.has(id));
   document.documentElement.style.setProperty("--era", S.mode === "summary" ? "#7A7F8F" : S.mode === "all" ? ALL_C : era().c);
+  document.querySelector(".modes").style.display = SHARED ? "none" : "";
   document.querySelectorAll(".modes button").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode === S.mode));
   $("#rail").style.display = S.mode === "rank" ? "" : "none";
   if (S.mode === "rank") renderRail();
@@ -946,12 +1017,12 @@ document.addEventListener("click", ev => {
       else S.era = ERAS[ERAS.indexOf(era())+1].id;
       save(); render(); window.scrollTo({top:0}); return;
     }
-    case "copy": {
-      const txt = summaryText();
-      (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject())
-        .then(() => toast("Picks copied."))
-        .catch(() => { $("#copyout").innerHTML = `<textarea readonly aria-label="Your picks">${esc(txt)}</textarea>`; toast("Select the text below to copy it."); });
-      return;
+    case "copy": offer(summaryText(), "Picks copied as text."); return;
+    case "link": offer(shareUrl(), "Share link copied."); return;
+    case "mine": {
+      SHARED = false; S = MINE || S; S.mode = "summary";
+      history.replaceState(null, "", location.pathname + location.search);
+      render(); window.scrollTo({top:0}); return;
     }
   }
 });
@@ -976,6 +1047,15 @@ document.addEventListener("submit", ev => {
   save(); render();
   toast(added ? `Added ${t} as your #${d.top.length}.` : `Added ${t}. Remove a pick to rank it.`);
 });
+
+const hash = /[#&]s=([A-Za-z0-9_-]+)/.exec(location.hash || "");
+if (hash){
+  try {
+    const o = JSON.parse(unb64u(hash[1]));
+    if (o && o.v === 1){ MINE = S; S = unpack(o); SHARED = true; }
+  } catch(e){ /* a mangled link just falls through to your own picks */ }
+}
+window.addEventListener("hashchange", () => location.reload());
 
 render();
 </script>
