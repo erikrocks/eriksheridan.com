@@ -168,6 +168,41 @@ Open Graph and Twitter card tags live in the `<head>` of both pages, pointing `o
 blue link with no card. **Keep `og:url` and `og:image` absolute**; relative URLs do not work
 for previews.
 
+## games.html — Save State
+
+A second standalone page in this repo: a ranker for your top 3 games per era, then an
+all-time 3. Self-contained, no build, no dependencies beyond Google Fonts. Added 6 Nov 2026
+from a file Erik supplied; the original is unmodified apart from the sharing work below.
+
+**It needs no subdomain, and that is the point.** Subdomains exist here because each
+project is a *different repo* — a custom domain on a project repo serves only that repo.
+`games.html` lives in this repo, so a plain path works with no DNS and no certificate.
+Anything else that lands in this repo is the same: just add the file.
+
+**GitHub Pages serves extensionless paths.** `eriksheridan.com/games` resolves to
+`games.html` with no redirect and no `index.html` folder needed. Don't restructure into
+`games/index.html` to get a clean URL — you already have one. (The hub entry links
+`games.html` explicitly; either spelling works.)
+
+### Sharing
+
+Picks live in `localStorage` under `save-state-v3`. Three ways out, all on the Summary tab:
+
+- **Copy share link** packs the picks into the URL hash. Eras become their index, games
+  their index within the era, write-ins ride along as `[title, year]`; the JSON is
+  base64url'd. A three-era set is ~140 characters, so it survives a text message.
+- **Copy as text** is the original plain-text export.
+- Opening a `#s=` link shows those picks **read-only** — banner, era switcher hidden,
+  `save()` short-circuits. It must never write to the viewer's `localStorage`; "Make my own
+  picks" drops back to theirs. If you touch this, re-test that the viewer's own picks
+  survive opening someone else's link.
+
+**Shared write-ins are attacker-controlled text.** They go through the same `esc()` as every
+other title — a link carrying a script tag renders it as literal text. Keep it that way.
+
+The hub tile `icons/savestate.svg` is drawn from the app's own mark (orange cartridge on its
+cream surface); Save State ships no icon of its own, so there is nothing upstream to re-pull.
+
 ## Deploying and verifying
 
 Push to `main`. GitHub Pages rebuilds in roughly a minute.
@@ -221,6 +256,9 @@ until curl -s "https://eriksheridan.com/?cb=$RANDOM" | grep -q "What I'm buildin
   by a seven-year-old". Keep real children's names off the public site — see the standing
   rule about never putting a real child's name in code, docs, or anything published.
   The KUDR kicker still reads "Kid designed, dad approved." — Erik kept that deliberately.
+- **6 Nov 2026** — `games.html` (Save State) added as a second page in this repo and
+  linked as a fifth hub entry, with share links added to it. No subdomain: it is a path
+  in this repo (see "games.html — Save State").
 - **4 Nov 2026** — each project entry got an icon in a left gutter. First drawn by hand,
   then replaced the same day with each project's **real app icon**, pulled from the live
   sites and styled as a phone home-screen tile (see "Entry icons").
