@@ -143,8 +143,11 @@ tile comes from the square 180px `apple-touch-icon.png` instead (still 2x+ at 48
 - 48px desktop, 42px mobile, `border-radius` ~23% (the iOS tile proportion), hairline ring
   and a soft shadow, lifting 2px on hover. Source images are 192px so they stay sharp on
   retina.
-- **EBAAPL's SVG has had its own `rx="12"` stripped** so the CSS radius governs all four
-  tiles identically. Keep it that way if you re-pull it.
+- **EBAAPL's tile is adapted, not copied.** Its 7 Nov 2026 icon (football in a gold trophy)
+  is a *round* turf badge on a transparent ground. Here the circle is replaced by a
+  full-square turf rect and the stripes run edge to edge, so it fills the tile like the
+  others; the trophy and ball are unchanged. If you re-pull it, re-apply that, or the tile
+  shows pale corners around a circle.
 - `alt=""` on all four, deliberately: each tile only restates the project name next to it.
   (Opposite call from the headshot, which carries real alt text.)
 - The tile is pinned to the **first line of the name** with a negative `margin-top`, not
