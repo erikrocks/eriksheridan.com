@@ -128,9 +128,14 @@ left gutter. They are not drawn by hand -- they are copies of the real icons, pu
 the live sites (`icon-192.png` from each manifest; EBAAPL serves `/icon.svg`). If a project
 changes its icon, re-pull it here; nothing syncs automatically.
 
+**The source must be a full square, not a pre-rounded icon.** The hub rounds the tiles
+itself; an icon with transparent rounded corners shows white wedges at the corners under
+that. GameTimeTalk's 7 Nov 2026 redesign ships rounded `icon-192`/`icon-512` PNGs, so its
+tile comes from the square 180px `apple-touch-icon.png` instead (still 2x+ at 48px).
+
 | Entry | File | Source |
 |---|---|---|
-| GameTimeTalk | `icons/gametimetalk.png` | `gametimetalk.com/gametimetalk/icon-192.png` |
+| GameTimeTalk | `icons/gametimetalk.png` | `gametimetalk.com/gametimetalk/apple-touch-icon.png` |
 | EBAAPL | `icons/ebaapl.svg` | `ebaapl.eriksheridan.com/icon.svg` |
 | KUDR | `icons/kudr.png` | `kudr.eriksheridan.com/icon-192.png` |
 | Bubble | `icons/bubble.png` | `bubble.eriksheridan.com/icon-192.png` |
@@ -231,8 +236,10 @@ tidy-up. Leave it, and leave the `save-state-v2` fallback read beside it. Three 
 **Shared write-ins are attacker-controlled text.** They go through the same `esc()` as every
 other title — a link carrying a script tag renders it as literal text. Keep it that way.
 
-The hub tile `icons/threelives.svg` is drawn from the app's own mark (orange cartridge on its
-cream surface); Three Lives ships no icon of its own, so there is nothing upstream to re-pull.
+The hub tile `icons/threelives.svg` is hand-drawn: three pixel hearts (the arcade lives
+counter) on the app's orange `#E8762C`, full-bleed like a phone icon. Redrawn 7 Nov 2026 --
+the earlier cartridge on a pale cream ground melted into the page and read as a placeholder.
+Three Lives ships no icon of its own, so there is nothing upstream to re-pull.
 
 ## Deploying and verifying
 
