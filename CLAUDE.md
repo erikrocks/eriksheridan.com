@@ -33,9 +33,15 @@ out is on the backlog). It is also the only entry on the hub that is not an
 `eriksheridan.com` subdomain — it has its own domain, registered at Squarespace like the
 others. Link the site, never a repo.
 
-Describe GameTimeTalk as a **beta**, not as finished. Two things are deliberately not said
+Don't describe GameTimeTalk as finished or polished. Two things are deliberately not said
 in public: which sports-data feed it uses, and any detail of its internals or known gaps.
 Fine to say: free, no accounts, works on phones.
+
+The GameTimeTalk session asked for an explicit "Still a beta" in the hub entry. It was
+there until 7 Nov 2026, when **Erik removed it** — his reasoning: everything on this page
+is in progress, and the "What I'm building" header already says so. Don't put it back on
+the strength of the original request; it's his site and he has ruled on it. The
+non-disclosure rules above are unaffected and still stand.
 
 ## Why subdomains and not `eriksheridan.com/kudr`
 
