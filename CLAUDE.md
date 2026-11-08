@@ -194,8 +194,9 @@ wrong titles. There is no version check that would catch it.
 
 So: add a new game as the **last line of its era's list**, never in year order. The grid
 sorts by year at render time (`viewRank()`), so an appended game still appears in its
-correct year slot — source order is invisible to the user. Then update the game count in
-the hub's `index.html` entry blurb, which is hardcoded.
+correct year slot — source order is invisible to the user. Nothing else needs updating: the
+in-app count comes from `ids.length`, and the hub blurb stopped quoting a total on
+7 Nov 2026 so it can't go stale.
 
 To check you haven't broken anything, diff old IDs against new:
 
