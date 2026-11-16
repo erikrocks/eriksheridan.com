@@ -136,18 +136,16 @@ tile comes from the square 180px `apple-touch-icon.png` instead (still 2x+ at 48
 | Entry | File | Source |
 |---|---|---|
 | GameTimeTalk | `icons/gametimetalk.png` | `gametimetalk.com/gametimetalk/apple-touch-icon.png` |
-| EBAAPL | `icons/ebaapl.svg` | `ebaapl.eriksheridan.com/icon.svg` |
+| EBAAPL | `icons/ebaapl.png` | image Erik supplied 16 Nov 2026 (512px, resized to 192) |
 | KUDR | `icons/kudr.png` | `kudr.eriksheridan.com/icon-192.png` |
 | Bubble | `icons/bubble.png` | `bubble.eriksheridan.com/icon-192.png` |
 
 - 48px desktop, 42px mobile, `border-radius` ~23% (the iOS tile proportion), hairline ring
   and a soft shadow, lifting 2px on hover. Source images are 192px so they stay sharp on
   retina.
-- **EBAAPL's tile is adapted, not copied.** Its 7 Nov 2026 icon (football in a gold trophy)
-  is a *round* turf badge on a transparent ground. Here the circle is replaced by a
-  full-square turf rect and the stripes run edge to edge, so it fills the tile like the
-  others; the trophy and ball are unchanged. If you re-pull it, re-apply that, or the tile
-  shows pale corners around a circle.
+- **EBAAPL's tile is Erik's own image, not the live site's icon.** On 16 Nov 2026 he
+  supplied a full-square illustrated trophy-and-football picture to use instead. Don't
+  re-pull `ebaapl.eriksheridan.com/icon.svg` over it.
 - `alt=""` on all four, deliberately: each tile only restates the project name next to it.
   (Opposite call from the headshot, which carries real alt text.)
 - The tile is pinned to the **first line of the name** with a negative `margin-top`, not
