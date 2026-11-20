@@ -30,8 +30,8 @@ DNS pointing at Vercel rather than GitHub. Don't try to manage either through th
 **GameTimeTalk shares EBAAPL's repo and Vercel project.** One deployment serves both sites
 and the *hostname* decides which one you get; there is no `gametimetalk` repo (splitting it
 out is on the backlog). It is also the only entry on the hub that is not an
-`eriksheridan.com` subdomain — it has its own domain, registered at Squarespace like the
-others. Link the site, never a repo.
+`eriksheridan.com` subdomain — it has its own domain (still registered at Squarespace;
+it moves around Jan 1, 2027). Link the site, never a repo.
 
 Don't describe GameTimeTalk as finished or polished. Two things are deliberately not said
 in public: which sports-data feed it uses, and any detail of its internals or known gaps.
@@ -52,15 +52,19 @@ Each project gets a subdomain and its own repo. Don't retry the path approach.
 
 ## DNS
 
-- **Registrar:** Squarespace Domains (inherited from Google Domains, which is why the
-  nameservers still read `ns-cloud-*.googledomains.com`). Manage at domains.squarespace.com
-  → eriksheridan.com → DNS → DNS Settings.
+- **Registrar and DNS: Cloudflare** (Erik's account; nameservers
+  donna/quinton.ns.cloudflare.com). The DNS moved off Squarespace in Nov 2026 and the
+  registration transfer completed 20 Nov 2026, with auto-renew ON and expiry Jan 14, 2028.
+  Manage it in the Cloudflare dashboard → eriksheridan.com → DNS → Records. Migration notes
+  are in ~/Desktop/domains/CLAUDE.md. Email Routing is on for this zone, so leave the
+  MX/SPF/DKIM records alone.
 - **Apex** `eriksheridan.com` → A records to the four GitHub Pages IPs (185.199.108-111.153).
 - **Each subdomain** → `CNAME <name> → erikrocks.github.io` (except `ebaapl`, which is a
   CNAME to a Vercel hostname).
 - No CAA records. Nothing blocking Let's Encrypt.
-- Erik has to add DNS records himself — there is no DNS CLI on this machine and no API
-  credentials for Squarespace. Give him exact field values: Type, Host, Data.
+- The Wrangler token has no DNS write access, so Erik adds records in the Cloudflare
+  dashboard, or Claude does it there via Claude in Chrome with his OK. Give exact field values:
+  Type, Name, Content, and Proxy status (use DNS only for GitHub Pages records).
 
 ### The certificate trap — read this before adding a subdomain
 
