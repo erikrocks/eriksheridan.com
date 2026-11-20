@@ -272,7 +272,7 @@ until curl -s "https://eriksheridan.com/?cb=$RANDOM" | grep -q "What I'm buildin
 - **Don't judge layout from a screenshot alone.** A mobile capture of this page looked
   broken (entries missing, text column too narrow) when it was completely fine — measure
   with `getBoundingClientRect()` before "fixing" anything.
-- Git identity is configured globally as `Erik Sheridan <sheridanerik@gmail.com>`.
+- Git identity is configured globally (Erik's name and personal email); commits use it.
 - Anything still linking to the bare `eriksheridan.com` expecting a resume now lands on the
   menu. One click away, but worth flagging if it's a job application or a profile link.
 
